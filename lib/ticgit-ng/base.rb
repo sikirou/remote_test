@@ -347,6 +347,15 @@ module TicGitNG
         needs_checkout = true
       end
 
+      #expire @tic_index and @tic_working if it mtime is older than git log
+      if File.exist?(@tic_index)
+        cache_mtime=File.mtime(@tic_working)
+        gitlog_mtime=git.gblob(which_branch?).log(1).map {|l| l.committer.date }[0]
+        reset_cache unless cache_mtime==gitlog_mtime
+        puts @tic_working
+        puts @tic_index
+      end
+
       needs_checkout = true unless File.file?('.hold')
 
       old_current = git.lib.branch_current
@@ -376,6 +385,16 @@ module TicGitNG
       end
       #If has ~/.ticgit dir, and 'ticgit' branch
       #If has ~/.ticgit-ng dir, and 'ticgit-ng' branch, and not ~/.ticgit dir and not 'ticgit' branch
+    end
+
+    def reset_cache
+      #@state, @tic_index, @tic_working
+      FileUtils.rm File.expand_path(@state)
+      FileUtils.rm File.expand_path(@tic_index)
+      FileUtils.rm_r File.expand_path(@tic_working)
+      @state=nil
+      @tic_index=nil
+      FileUtils.mkdir_p File.expand_path(@tic_working)
     end
 
   end
