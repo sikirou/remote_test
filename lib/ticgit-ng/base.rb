@@ -10,22 +10,14 @@ module TicGitNG
 
     def initialize(git_dir, opts = {})
       @git = Git.open(find_repo(git_dir))
+      @logger = opts[:logger] || Logger.new(STDOUT)
+      @last_tickets = []
+
       proj = Ticket.clean_string(@git.dir.path)
 
       @tic_dir = opts[:tic_dir] || "~/.#{which_branch?}"
       @tic_working = opts[:working_directory] || File.expand_path(File.join(@tic_dir, proj, 'working'))
       @tic_index = opts[:index_file] || File.expand_path(File.join(@tic_dir, proj, 'index'))
-
-      @logger = opts[:logger] || Logger.new(STDOUT)
-      @last_tickets = []
-
-      #expire @tic_index and @tic_working if it mtime is older than git log
-      if File.exist?(@tic_index) and File.exist?(@tic_working)
-        cache_mtime=File.mtime(@tic_working)
-        gitlog_mtime=git.gblob(which_branch?).log(1).map {|l| l.committer.date }[0]
-        reset_cache unless cache_mtime==gitlog_mtime
-      end
-
 
       # load config file
       @config_file = File.expand_path(File.join(@tic_dir, proj, 'config.yml'))
@@ -354,6 +346,16 @@ module TicGitNG
         FileUtils.mkdir_p(@tic_working)
         needs_checkout = true
       end
+
+      #expire @tic_index and @tic_working if it mtime is older than git log
+      if File.exist?(@tic_index) and File.exist?(@tic_working)
+        cache_mtime=File.mtime(@tic_working)
+        gitlog_mtime=git.gblob(which_branch?).log(1).map {|l| l.committer.date }[0]
+        reset_cache unless cache_mtime==gitlog_mtime
+        puts @tic_working
+        puts @tic_index
+      end
+
       needs_checkout = true unless File.file?('.hold')
 
       old_current = git.lib.branch_current
