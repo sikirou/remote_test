@@ -23,9 +23,10 @@ module TicGitNG
       if File.exist?(@tic_index) and File.exist?(@tic_working)
         cache_mtime=File.mtime(@tic_working)
         gitlog_mtime=git.gblob(which_branch?).log(1).map {|l| l.committer.date }[0]
-        reset_cache unless cache_mtime==gitlog_mtime
+        unless (cache_mtime > gitlog_mtime.-(240) and cache_mtime <= gitlog_mtime) or (cache_mtime > gitlog_mtime.+(30) and cache_mtime >= gitlog_mtime)
+          reset_cache unless cache_mtime==gitlog_mtime
+        end
       end
-
 
       # load config file
       @config_file = File.expand_path(File.join(@tic_dir, proj, 'config.yml'))
