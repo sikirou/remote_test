@@ -348,7 +348,7 @@ module TicGitNG
       end
 
       #expire @tic_index and @tic_working if it mtime is older than git log
-      if File.exist?(@tic_index)
+      if File.exist?(@tic_index) and File.exist?(@tic_working)
         cache_mtime=File.mtime(@tic_working)
         gitlog_mtime=git.gblob(which_branch?).log(1).map {|l| l.committer.date }[0]
         reset_cache unless cache_mtime==gitlog_mtime
