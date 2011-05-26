@@ -38,7 +38,6 @@ The available ticgit commands are:
     state                            Change state of a ticket
     sync                             Sync tickets
     tag                              Modify tags of a ticket
-    title                            Modify the title of a ticket
 
 Common options:
     -v, --version                    Show the version number
