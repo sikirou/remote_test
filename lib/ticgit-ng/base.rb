@@ -341,7 +341,7 @@ module TicGitNG
         new_file('.hold', 'hold')
 
         unless ticgitng_branch
-          git.add ".hold"
+          git.add
           git.commit('creating the ticgit-ng branch')
         end
       end
