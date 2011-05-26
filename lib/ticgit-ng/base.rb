@@ -390,12 +390,12 @@ module TicGitNG
 
     def reset_cache
       #@state, @tic_index, @tic_working
-      FileUtils.rm File.expand_path(@state)
-      FileUtils.rm File.expand_path(@tic_index)
-      FileUtils.rm_r File.expand_path(@tic_working)
+      FileUtils.rm File.expand_path(@state) rescue nil
+      FileUtils.rm File.expand_path(@tic_index) rescue nil
+      FileUtils.rm_r File.expand_path(@tic_working) rescue nil
       @state=nil
       @tic_index=nil
-      FileUtils.mkdir_p File.expand_path(@tic_working)
+      FileUtils.mkdir_p File.expand_path(@tic_working) rescue nil
     end
 
   end
