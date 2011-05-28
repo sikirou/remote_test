@@ -28,20 +28,7 @@ describe TicGitNG do
       @ticgitng.git.gtree(@ticgitng.which_branch?).trees.each {|tree| tree[1].blobs.map {|blob_name| has_fake_file=true if blob_name[0].include?('fake_file') }}
       has_fake_file.should eq(false)
     end
-  end
 
-  it "Should reset cache, index, and state if it is inconsistent with git" do
-    Dir.chdir(File.expand_path( tmp_dir=Dir.mktmpdir('ticgit-ng-gitdir1-') )) do
-      require 'pp'
-
-      first_ticket_id=@ticgitng.ticket_new('new ticket, clean state', :comment=>"I am the content").ticket_id
-      save_point=@ticgitng.git.object('ticgit').sha
-      list1=@ticgitng.ticket_list
-      @ticgitng.ticket_checkout first_ticket_id
-      @ticgitng.ticket_comment "I am a comment that should disapper!"
-      list1.should_not eq(@ticgitng.ticket_list)
-      save_point.should_not eq( @ticgitng.git.object('ticgit') )
-    end
   end
 
 end
