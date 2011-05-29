@@ -396,7 +396,6 @@ module TicGitNG
       FileUtils.rm File.expand_path(@tic_index) rescue nil
       FileUtils.rm_r File.expand_path(@tic_working) rescue nil
       @state=nil
-      @tic_index=nil
       FileUtils.mkdir_p File.expand_path(@tic_working)
     end
 
