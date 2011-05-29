@@ -20,10 +20,14 @@ module TicGitNG
       @last_tickets = []
 
       #expire @tic_index and @tic_working if it mtime is older than git log
-      if File.exist?(@tic_index) and File.exist?(@tic_working)
+      puts "Started"
+      if File.exist?(@tic_working)
+        puts "Inside"
         cache_mtime=File.mtime(@tic_working)
         gitlog_mtime=git.gblob(which_branch?).log(1).map {|l| l.committer.date }[0]
-        unless (cache_mtime > gitlog_mtime.-(240) and cache_mtime <= gitlog_mtime) or (cache_mtime > gitlog_mtime.+(30) and cache_mtime >= gitlog_mtime)
+        #unless (cache_mtime > gitlog_mtime.-(20) and cache_mtime <= gitlog_mtime) or (cache_mtime > gitlog_mtime.+(30) and cache_mtime >= gitlog_mtime)
+        if ((cache_mtime.to_i - gitlog_mtime.to_i) > 120) or ((gitlog_mtime.to_i - cache_mtime.to_i) > 120)
+          puts "Resetting cache"
           reset_cache unless cache_mtime==gitlog_mtime
         end
       end
@@ -393,7 +397,7 @@ module TicGitNG
       FileUtils.rm_r File.expand_path(@tic_working) rescue nil
       @state=nil
       @tic_index=nil
-      FileUtils.mkdir_p File.expand_path(@tic_working) rescue nil
+      FileUtils.mkdir_p File.expand_path(@tic_working)
     end
 
   end
