@@ -63,5 +63,4 @@ Common options:
     output.shift.should match /#{fields.join '\s+'}/
     output.shift.should match /^-+$/
   end
-  it 'Does not use elipses in UTF8 unless system uses UTF8'
 end
