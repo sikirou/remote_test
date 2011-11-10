@@ -201,7 +201,7 @@ module TicGitNG
         value = value.to_s
 
         if value.bytesize > size
-          sub_value = "#{value[0, size - 1]}\xe2\x80\xa6"
+          sub_value = "#{value[0, size - 1]}+"
         else
           sub_value = value[0, size]
         end
@@ -213,7 +213,7 @@ module TicGitNG
         chars = value.to_s.scan(/./um)
 
         if chars.size > size
-          sub_value = "#{chars[0, size-1]}\xe2\x80\xa6"
+          sub_value = "#{chars[0, size-1]}+"
         else
           sub_value = chars.join
         end
