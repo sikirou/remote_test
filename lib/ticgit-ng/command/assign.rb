@@ -29,7 +29,7 @@ module TicGitNG
         if ARGV.length == 1  #ti assign
           tic_id=nil
         elsif ARGV.length == 2 #ti assign {ticid}
-          tic_id=ARGV[2]
+          tic_id=ARGV[1]
         elsif ARGV.length == 3 #ti assign -u/-c {user/ticid}
           if options.user
             tic_id=nil
