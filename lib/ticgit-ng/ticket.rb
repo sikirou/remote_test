@@ -42,11 +42,13 @@ module TicGitNG
       title, date = self.parse_ticket_name(ticket_name)
       t.opened = date
 
-      ticket_hash['files'].each do |fname, value|
+      require 'pp'
+      pp ticket_hash
+      ticket_hash['files'].each do |fname, sha|
         if fname == 'TICKET_ID'
-          tid = value
+          tid = sha
         elsif fname == 'TICKET_TITLE'
-          t.title = base.git.gblob(value).contents
+          t.title = base.git.gblob(sha).contents
         else
           # matching
           data = fname.split('_')
@@ -54,18 +56,24 @@ module TicGitNG
           case data[0]
           when 'ASSIGNED'
             t.assigned = data[1]
-          when 'ATTACHMENT'
-            t.attachments << TicGitNG::Attachment.new(base, fname, value)
+          when 'ATTACHMENTS'
+            #FIXME attach
+              #Attachments dir naming format:
+              #ticket_name/ATTACHMENTS/123456_jeff.welling@gmail.com_fubar.jpg
+              #
+              # Find out what fname and sha are for when ATTACHMENTS is a dir
+              # and we hit here. Breakout attachments reading to function.
+            t.attachments << TicGitNG::Attachment.new(base, fname, sha)
           when 'COMMENT'
-            t.comments << TicGitNG::Comment.new(base, fname, value)
+            t.comments << TicGitNG::Comment.new(base, fname, sha)
           when 'POINTS'
-            t.points = base.git.gblob(value).contents.to_i
+            t.points = base.git.gblob(sha).contents.to_i
           when 'STATE'
             t.state = data[1]
           when 'TAG'
             t.tags << data[1]
           when 'TITLE'
-            t.title = base.git.gblob(value).contents
+            t.title = base.git.gblob(sha).contents
           end
         end
       end
@@ -144,6 +152,34 @@ module TicGitNG
         base.git.add File.join(ticket_name, t)
         base.git.commit("added comment to ticket #{ticket_name}")
       end
+    end
+
+    def add_attach( attachment )
+        raise ArgumenError, "add_attach() argument must be of class TicGitNG::Attachment" unless attachment.class==TicGitNG::Attachment
+        base.in_branch do |wd|
+            attachments_dirname= File.join( ticket_name, 'ATTACHMENTS' )
+            #if first attachment, create dir
+            if !File.directory?( attachments_dirname )
+                Dir.mkdir attachments_dirname
+            end
+            Dir.chdir( attachments_dirname ) do
+                #To avoid having to copy the file, use a hardlink instead
+                #hardlink the file into attachments_dirname
+                FileUtils.ln( attachment.origin, 
+                             a_name=File.join( attachments_dirname, 
+                                       create_attachment_name(attachments.origin)
+                                      )
+                            )
+            end
+            base.git.add a_name
+            base.git.commit("added attachment #{File.basename(attachment.origin)} to ticket #{ticket_name}")
+        end
+    end
+
+    def get_attach file_id, new_filename
+        base.in_branch do |wd|
+
+        end
     end
 
     def change_state(new_state)
@@ -253,7 +289,10 @@ module TicGitNG
     def self.create_ticket_name(title)
       [Time.now.to_i.to_s, Ticket.clean_string(title), rand(999).to_i.to_s].join('_')
     end
-
-
+    
+    def create_attachment_name( attachment_name )
+        raise ArgumentError, "create_attachment_name( ) only takes a string" unless attachment_name.class==String
+        Time.now.to_i.to_s+'_'+email+'_'+File.basename( attachment_name )
+    end
   end
 end

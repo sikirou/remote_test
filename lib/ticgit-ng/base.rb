@@ -355,9 +355,14 @@ module TicGitNG
         mode, type, sha = data.split(" ")
         tic = file.split('/')
         if tic.size == 2  # directory depth
-          ticket, info = tic
-          tickets[ticket] ||= { 'files' => [] }
-          tickets[ticket]['files'] << [info, sha]
+            ticket, info = tic
+            tickets[ticket] ||= { 'files' => [] }
+            tickets[ticket]['files'] << [info, sha]
+        elsif tic.size == 3
+            ticket, garbage, info = tic
+            info = 'ATTACHMENT_' + info
+            tickets[ticket] ||= { 'files' => [] }
+            tickets[ticket]['files'] << [info, sha]
         end
       end
       tickets
@@ -436,6 +441,25 @@ module TicGitNG
     def needs_reset? cache_mtime, gitlog_mtime
       ((cache_mtime.to_i - gitlog_mtime.to_i) > 120) or ((gitlog_mtime.to_i - cache_mtime.to_i) > 120)
     end
+    
+    def ticket_attach filename, ticket_id=nil
+        t = ticket_revparse( ticket_id )
+        ticket= TicGitNG::Ticket.open( self, t, tickets[t] )
+        ticket.add_attach( TicGitNG::Attachment.new(self, filename) )
+        reset_ticgitng
+    end
 
+    #ticket_get_attachment()
+    #file_id -      return the attachment identified by file_id
+    #new_filename - save the attachment as new_filename
+    #ticket_id -    get the attachment from ticket_id instead of current
+    def ticket_get_attachment file_id=nil, new_filename=nil, ticket_id=nil 
+        if t = ticket_revparse(ticket_id)
+            pwd = Dir.getwd
+            ticket = TicGitNG::Ticket.open( self, t, tickets[t] )
+            #deal with new_filename being a dir as well as new_filename being a filename
+            ticket.get_attach( file_id, new_filename )
+        end
+    end
   end
 end
