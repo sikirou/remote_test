@@ -110,44 +110,62 @@ module TicGitNG
     end
 
     def ticket_show(t, more=nil)
-      days_ago = ((Time.now - t.opened) / (60 * 60 * 24)).round
+        days_ago = ((Time.now - t.opened) / (60 * 60 * 24)).round
 
-      data = [
-        ['Title',    t.title],
-        ['TicId',    t.ticket_id],
-        '',
-        ['Assigned', t.assigned],
-        ['Opened',   "#{t.opened} (#{days_ago} days)"],
-        ['State',    t.state.upcase],
-        ['Points',   t.points || 'no estimate'],
-        ['Tags',     t.tags.join(', ')],
-        ''
-      ]
+        data = [
+            ['Title',    t.title],
+            ['TicId',    t.ticket_id],
+            '',
+            ['Assigned', t.assigned],
+            ['Opened',   "#{t.opened} (#{days_ago} days)"],
+            ['State',    t.state.upcase],
+            ['Points',   t.points || 'no estimate'],
+            ['Tags',     t.tags.join(', ')],
+            ''
+        ]
 
-      data.each do |(key, value)|
-        puts(value ? "#{key}: #{value}" : key)
-      end
-
-      unless t.comments.empty?
-        puts "Comments (#{t.comments.size}):"
-        t.comments.reverse_each do |c|
-          puts "  * Added #{c.added.strftime('%m/%d %H:%M')} by #{c.user}"
-
-          wrapped = c.comment.split("\n").map{|line|
-            line.length > 80 ? line.gsub(/(.{1,80})(\s+|$)/, "\\1\n").strip : line
-          }.join("\n")
-
-          wrapped = wrapped.split("\n").map{|line| "\t#{line}" }
-
-          if wrapped.size > 6 and more.nil?
-            puts wrapped[0, 6].join("\n")
-            puts "\t** more... **"
-          else
-            puts wrapped.join("\n")
-          end
-          puts
+        data.each do |(key, value)|
+            puts(value ? "#{key}: #{value}" : key)
         end
-      end
+
+        #FIXME display attachments inline chronologically with comments
+        unless t.comments.empty? and t.attachments.empty?
+            comments_and_attachments= Hash.new
+            puts "Comments and attachments (#{t.comments.size + t.attachments.size}):"
+            t.comments.each do |c|
+                comments_and_attachments[c.added]=c
+            end
+            
+            t.attachments.each do |a|
+                comments_and_attachments[a.added]=a
+            end
+            comments_and_attachments.sort.each {|item|
+                if item[1].class==TicGitNG::Comment
+                    #print comment
+                    puts "  * Added #{item[1].added.strftime('%m/%d %H:%M')} by #{item[1].user}"
+
+                    wrapped = item[1].comment.split("\n").map{|line|
+                        line.length > 80 ? line.gsub(/(.{1,80})(\s+|$)/, "\\1\n").strip : line
+                    }.join("\n")
+
+                    wrapped = wrapped.split("\n").map{|line| "\t#{line}" }
+
+                    if wrapped.size > 6 and more.nil?
+                        puts wrapped[0, 6].join("\n")
+                        puts "\t** more... **"
+                    else
+                        puts wrapped.join("\n")
+                    end
+                    puts
+                else
+                    #print attachment
+                    puts "  * Added #{item[1].added.strftime('%m/%d %H:%M')} by #{item[1].user}"
+                    puts "    Attachment: #{t.attachments.index(item[1]) }"
+                    puts "    Filename:   #{File.basename(item[1].attachment_name).split('_').pop}"
+                    puts
+                end
+            }
+        end
     end
 
     class << self

@@ -39,6 +39,7 @@ module TicGitNG
   autoload :VERSION, 'ticgit-ng/version'
   autoload :Comment, 'ticgit-ng/comment'
   autoload :Ticket, 'ticgit-ng/ticket'
+  autoload :Attachment, 'ticgit-ng/attachment'
 
   # options
   #   :logger            => Logger.new(STDOUT)

@@ -42,8 +42,6 @@ module TicGitNG
       title, date = self.parse_ticket_name(ticket_name)
       t.opened = date
 
-      require 'pp'
-      pp ticket_hash
       ticket_hash['files'].each do |fname, sha|
         if fname == 'TICKET_ID'
           tid = sha
@@ -60,10 +58,13 @@ module TicGitNG
             #FIXME attach
               #Attachments dir naming format:
               #ticket_name/ATTACHMENTS/123456_jeff.welling@gmail.com_fubar.jpg
+              #data[] format:
+              #"ATTACHMENTS_1342116799_jeff.welling@gmail.com_Rakefile".split('_')
               #
               # Find out what fname and sha are for when ATTACHMENTS is a dir
               # and we hit here. Breakout attachments reading to function.
-            t.attachments << TicGitNG::Attachment.new(base, fname, sha)
+              filename=File.join( 'ATTACHMENTS', fname.gsub(/^ATTACHMENTS_/,'') )
+            t.attachments << TicGitNG::Attachment.new(base, filename, sha)
           when 'COMMENT'
             t.comments << TicGitNG::Comment.new(base, fname, sha)
           when 'POINTS'
@@ -81,7 +82,6 @@ module TicGitNG
       t.ticket_id = tid
       t
     end
-
 
     def self.parse_ticket_name(name)
       epoch, title, rand = name.split('_')
@@ -157,28 +157,57 @@ module TicGitNG
     def add_attach( attachment )
         raise ArgumenError, "add_attach() argument must be of class TicGitNG::Attachment" unless attachment.class==TicGitNG::Attachment
         base.in_branch do |wd|
+            #Attachment naming format:
+            #ticket_name/ATTACHMENTS/123456_jeff.welling@gmail.com_fubar.jpg
             attachments_dirname= File.join( ticket_name, 'ATTACHMENTS' )
+            a_name= File.expand_path( File.join(
+                attachments_dirname, create_attachment_name(attachment.filename)
+            ))
             #if first attachment, create dir
-            if !File.directory?( attachments_dirname )
+            if File.exist?( attachments_dirname ) && !File.directory?( attachments_dirname )
+                puts "Could not create ATTACHMENTS directory"
+                exit 1
+            elsif !File.directory?( attachments_dirname )
                 Dir.mkdir attachments_dirname
             end
             Dir.chdir( attachments_dirname ) do
                 #To avoid having to copy the file, use a hardlink instead
                 #hardlink the file into attachments_dirname
-                FileUtils.ln( attachment.origin, 
-                             a_name=File.join( attachments_dirname, 
-                                       create_attachment_name(attachments.origin)
-                                      )
-                            )
+                FileUtils.ln( attachment.filename, a_name )
             end
             base.git.add a_name
-            base.git.commit("added attachment #{File.basename(attachment.origin)} to ticket #{ticket_name}")
+            base.git.commit("added attachment #{File.basename(attachment.filename)} to ticket #{ticket_name}")
         end
     end
 
-    def get_attach file_id, new_filename
+    #file_id can be one of:
+    #  - An index number of the attachment (1,2,3,...)
+    #  - A filename (fubar.jpg)
+    #  - nil (nil) means use the last attachment
+    #
+    #if new_filename is nil, use existing filename
+    def get_attach file_id=nil, new_filename=nil
+        attachment=nil
+        prefix=Dir.pwd
         base.in_branch do |wd|
+            if file_id.to_i==0 and file_id=="0"
+                attachment= attachments[0]
+            elsif file_id.to_i  > 0
+                attachment= attachments[file_id.to_i]
+            else
+                #find attachment by filename
+                attachments.each {|a|
+                    attachment=a if a.filename.split('_').pop==file_id
+                }
+            end
 
+            if new_filename
+                filename= File.join( prefix, new_filename )
+            else
+                filename= File.join( prefix, File.basename(attachment.filename).split('_').pop )
+            end
+            #save attachment [as new_filename]
+            FileUtils.ln( File.join( ticket_name, attachment.filename ), filename )
         end
     end
 

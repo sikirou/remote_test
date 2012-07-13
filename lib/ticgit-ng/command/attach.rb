@@ -27,7 +27,7 @@ module TicGitNG
                 }
                 opts.on_head(
                     "-g FILE_ID", "--get FILE_ID", "Retrieve the file FILE_ID"){|v|
-                    puts "Warning: ticket ID argument is not valid with the retrieve attachment argument" if options.id
+                    puts "Warning: ticket ID argument is not valid with the retrieve attachment argument" if options.ticket_id
                     options.get_file = v
                 }
                 opts.on_head(

@@ -1,10 +1,14 @@
-class TicGitNG
+module TicGitNG
     class Attachment
-        #origin is only populated when adding a new attachment.
-        #It is the path of the original file of the attachment.
-        attr_accessor :origin
+        attr_reader :user, :added, :filename, :sha, :attachment_name
         #Called when attaching a new attachment and when reading/opening attachments
-        def initialize( base, fname, sha )
+        def initialize( base, fname, sha=nil )
+            @base=base
+            @filename=fname
+            #sha may be nil if the ticket is being attached
+            @sha=sha
+            @added, @user, @attachment_name = File.basename(fname).split('_')
+            @added= Time.at(@added.to_i)
         end
     end
 end

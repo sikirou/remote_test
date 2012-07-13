@@ -359,10 +359,12 @@ module TicGitNG
             tickets[ticket] ||= { 'files' => [] }
             tickets[ticket]['files'] << [info, sha]
         elsif tic.size == 3
-            ticket, garbage, info = tic
-            info = 'ATTACHMENT_' + info
-            tickets[ticket] ||= { 'files' => [] }
-            tickets[ticket]['files'] << [info, sha]
+            ticket, attch_dir, filename = tic
+            if filename
+                filename = 'ATTACHMENTS_' + filename
+                tickets[ticket] ||= { 'files' => [] }
+                tickets[ticket]['files'] << [filename, sha]
+            end
         end
       end
       tickets
@@ -445,7 +447,7 @@ module TicGitNG
     def ticket_attach filename, ticket_id=nil
         t = ticket_revparse( ticket_id )
         ticket= TicGitNG::Ticket.open( self, t, tickets[t] )
-        ticket.add_attach( TicGitNG::Attachment.new(self, filename) )
+        ticket.add_attach( TicGitNG::Attachment.new( self, File.expand_path(filename) ) )
         reset_ticgitng
     end
 
