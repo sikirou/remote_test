@@ -447,8 +447,9 @@ module TicGitNG
     def ticket_attach filename, ticket_id=nil
         t = ticket_revparse( ticket_id )
         ticket= TicGitNG::Ticket.open( self, t, tickets[t] )
-        ticket.add_attach( TicGitNG::Attachment.new( self, File.expand_path(filename) ) )
+        ticket.add_attach( self, filename )
         reset_ticgitng
+        ticket
     end
 
     #ticket_get_attachment()

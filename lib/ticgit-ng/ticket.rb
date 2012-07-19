@@ -63,8 +63,8 @@ module TicGitNG
               #
               # Find out what fname and sha are for when ATTACHMENTS is a dir
               # and we hit here. Breakout attachments reading to function.
-              filename=File.join( 'ATTACHMENTS', fname.gsub(/^ATTACHMENTS_/,'') )
-            t.attachments << TicGitNG::Attachment.new(base, filename, sha)
+            filename=File.join( 'ATTACHMENTS', fname.gsub(/^ATTACHMENTS_/,'') )
+            t.attachments << TicGitNG::Attachment.new( filename)
           when 'COMMENT'
             t.comments << TicGitNG::Comment.new(base, fname, sha)
           when 'POINTS'
@@ -154,29 +154,15 @@ module TicGitNG
       end
     end
 
-    def add_attach( attachment )
-        raise ArgumenError, "add_attach() argument must be of class TicGitNG::Attachment" unless attachment.class==TicGitNG::Attachment
+    def add_attach( base, filename )
+        filename=File.expand_path(filename)
+        #FIXME Refactor -- Attachment.new should be called from Ticket.rb
+        #               -- Attachment filename creation should be handled
+        #                  by the Attachment.rb code
         base.in_branch do |wd|
-            #Attachment naming format:
-            #ticket_name/ATTACHMENTS/123456_jeff.welling@gmail.com_fubar.jpg
-            attachments_dirname= File.join( ticket_name, 'ATTACHMENTS' )
-            a_name= File.expand_path( File.join(
-                attachments_dirname, create_attachment_name(attachment.filename)
-            ))
-            #if first attachment, create dir
-            if File.exist?( attachments_dirname ) && !File.directory?( attachments_dirname )
-                puts "Could not create ATTACHMENTS directory"
-                exit 1
-            elsif !File.directory?( attachments_dirname )
-                Dir.mkdir attachments_dirname
-            end
-            Dir.chdir( attachments_dirname ) do
-                #To avoid having to copy the file, use a hardlink instead
-                #hardlink the file into attachments_dirname
-                FileUtils.ln( attachment.filename, a_name )
-            end
-            base.git.add a_name
-            base.git.commit("added attachment #{File.basename(attachment.filename)} to ticket #{ticket_name}")
+            attachments << (a=TicGitNG::Attachment.create( filename, self  ))
+            base.git.add a.filename
+            base.git.commit("added attachment #{File.basename(a.filename)} to ticket #{ticket_name}")
         end
     end
 
@@ -318,7 +304,7 @@ module TicGitNG
     def self.create_ticket_name(title)
       [Time.now.to_i.to_s, Ticket.clean_string(title), rand(999).to_i.to_s].join('_')
     end
-    
+
     def create_attachment_name( attachment_name )
         raise ArgumentError, "create_attachment_name( ) only takes a string" unless attachment_name.class==String
         Time.now.to_i.to_s+'_'+email+'_'+File.basename( attachment_name )
