@@ -66,6 +66,12 @@ tempdir -
       yield(line.strip)
     end
   end
+    
+    def read_line_of filename 
+        File.open(filename, "r").each_line do |line|
+          return line
+        end
+    end
 
 end
 
