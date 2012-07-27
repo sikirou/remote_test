@@ -55,16 +55,12 @@ module TicGitNG
           when 'ASSIGNED'
             t.assigned = data[1]
           when 'ATTACHMENTS'
-            #FIXME attach
               #Attachments dir naming format:
               #ticket_name/ATTACHMENTS/123456_jeff.welling@gmail.com_fubar.jpg
               #data[] format:
               #"ATTACHMENTS_1342116799_jeff.welling@gmail.com_Rakefile".split('_')
-              #
-              # Find out what fname and sha are for when ATTACHMENTS is a dir
-              # and we hit here. Breakout attachments reading to function.
             filename=File.join( 'ATTACHMENTS', fname.gsub(/^ATTACHMENTS_/,'') )
-            t.attachments << TicGitNG::Attachment.new( filename)
+            t.attachments << TicGitNG::Attachment.new( filename )
           when 'COMMENT'
             t.comments << TicGitNG::Comment.new(base, fname, sha)
           when 'POINTS'
@@ -79,6 +75,9 @@ module TicGitNG
         end
       end
 
+      if !t.attachments.class==NilClass and t.attachments.size > 1
+          t.attachments= t.attachments.sort {|a1, a2| a1.added <=> a2.added }
+      end
       t.ticket_id = tid
       t
     end
@@ -154,15 +153,18 @@ module TicGitNG
       end
     end
 
-    def add_attach( base, filename )
+    def add_attach( base, filename, time=nil )
         filename=File.expand_path(filename)
         #FIXME Refactor -- Attachment.new should be called from Ticket.rb
         #               -- Attachment filename creation should be handled
         #                  by the Attachment.rb code
         base.in_branch do |wd|
-            attachments << (a=TicGitNG::Attachment.create( filename, self  ))
-            base.git.add a.filename
+            attachments << (a=TicGitNG::Attachment.create( filename, self, time))
+            base.git.add File.join( ticket_name, a.filename )
             base.git.commit("added attachment #{File.basename(a.filename)} to ticket #{ticket_name}")
+        end
+        if attachments.class!=NilClass and attachments.size > 1
+            @attachments=attachments.sort {|a1,a2| a1.added <=> a2.added }
         end
     end
 
@@ -174,12 +176,16 @@ module TicGitNG
     #if new_filename is nil, use existing filename
     def get_attach file_id=nil, new_filename=nil
         attachment=nil
-        prefix=Dir.pwd
         base.in_branch do |wd|
-            if file_id.to_i==0 and file_id=="0"
+            if file_id.to_i==0 and (file_id=="0" or file_id.class==Fixnum)
                 attachment= attachments[0]
             elsif file_id.to_i  > 0
-                attachment= attachments[file_id.to_i]
+                if !attachments[file_id.to_i].nil?
+                    attachment= attachments[file_id.to_i]
+                else
+                    puts "No attachments match file id #{file_id}"
+                    exit
+                end
             else
                 #find attachment by filename
                 attachments.each {|a|
@@ -187,13 +193,29 @@ module TicGitNG
                 }
             end
 
-            if new_filename
-                filename= File.join( prefix, new_filename )
+            if !new_filename
+                #if no filename is specified...
+                filename= File.basename(attachment.filename).split('_').pop
             else
-                filename= File.join( prefix, File.basename(attachment.filename).split('_').pop )
+                #if there is a new_filename given
+                if File.exist?( new_filename ) and File.directory?( new_filename )
+                    #if it is a directory, not a filename
+                    filename= File.join(
+                        new_filename,
+                        File.basename(attachment.filename.split('_').pop)
+                    )
+                else
+                    #if it is a filename, not a dir
+                    filename= new_filename
+                end
+            end
+
+            unless File.exist?( File.dirname(filename) )
+                FileUtils.mkdir_p( File.dirname(filename) )
             end
             #save attachment [as new_filename]
-            FileUtils.ln( File.join( ticket_name, attachment.filename ), filename )
+            t=File.join( ticket_name, attachment.filename )
+            FileUtils.ln( t, filename )
         end
     end
 
@@ -305,9 +327,17 @@ module TicGitNG
       [Time.now.to_i.to_s, Ticket.clean_string(title), rand(999).to_i.to_s].join('_')
     end
 
-    def create_attachment_name( attachment_name )
+    def create_attachment_name( attachment_name, time=nil )
         raise ArgumentError, "create_attachment_name( ) only takes a string" unless attachment_name.class==String
-        Time.now.to_i.to_s+'_'+email+'_'+File.basename( attachment_name )
+        if time
+            if time.to_i == 0
+                raise ArgumentError, "argument 'time' is not valid"  unless time.class==Fixnum
+            else
+                time=time.to_i
+            end
+        end
+        time or time=Time.now.to_i
+        time.to_s+'_'+email+'_'+File.basename( attachment_name )
     end
   end
 end

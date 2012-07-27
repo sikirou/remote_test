@@ -10,10 +10,8 @@ module TicGitNGSpecHelper
 =begin
 tempdir -
   test => "content"
-
   subdir -
     testfile => "content2"
-
 =end
   def setup_new_git_repo prefix='ticgit-ng-gitdir-'
     tempdir = Dir.mktmpdir prefix
@@ -73,6 +71,10 @@ tempdir -
         end
     end
 
+      def time_skew
+          Time.now.to_i + rand(1000)
+      end
+
 end
 
 
@@ -115,5 +117,4 @@ class Hash
   def only(*keys)
     self.reject { |k,v| !keys.include?(k || k.to_sym) }
   end
-
 end
