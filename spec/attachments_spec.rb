@@ -248,7 +248,17 @@ describe TicGitNG::Attachment do
         File.read( attachment_fname1 ).strip.split("\n").size.should==2
     end
   end
-  it "should not explode violently when retrieving an attachment from no attachments"
+  it "should not explode violently when retrieving an attachment from no attachments" do
+    Dir.chdir(File.expand_path( tmp_dir=Dir.mktmpdir('ticgit-ng-gitdir1-') )) do
+        tic= @ticgitng.ticket_new('my_delicious_ticket')
+        lambda {
+            tic.attachments[0]
+        }.should_not raise_error
+        lambda {
+            @ticgitng.ticket_get_attachment( 0, nil, tic.ticket_id )
+        }.should raise_error(SystemExit)
+    end
+  end
   it "should be able to handle filenames with '_' in them -- '_' is a special char"
   it "should allow the attaching of multiple filenames with the same name"
 end

@@ -178,7 +178,12 @@ module TicGitNG
         attachment=nil
         base.in_branch do |wd|
             if file_id.to_i==0 and (file_id=="0" or file_id.class==Fixnum)
-                attachment= attachments[0]
+                if !attachments[file_id.to_i].nil?
+                    attachment= attachments[0]
+                else
+                    puts "No attachments match file id #{file_id}"
+                    exit
+                end
             elsif file_id.to_i  > 0
                 if !attachments[file_id.to_i].nil?
                     attachment= attachments[file_id.to_i]
