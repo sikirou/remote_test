@@ -215,7 +215,7 @@ module TicGitNG
             end
             #save attachment [as new_filename]
             t=File.join( ticket_name, attachment.filename )
-            FileUtils.ln( t, filename )
+            FileUtils.cp( t, filename )
         end
     end
 

@@ -27,7 +27,7 @@ module TicGitNG
             end
             #copy/link the raw_filename
             Dir.chdir( File.dirname(a_name) ) do
-                FileUtils.ln( raw_fname, a_name )
+                FileUtils.cp( raw_fname, a_name )
             end
             #call init on the new file to properly populate the variables
             a_name= File.join( 

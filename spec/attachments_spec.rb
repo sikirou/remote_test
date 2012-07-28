@@ -190,13 +190,65 @@ describe TicGitNG::Attachment do
         new_file( attachment_fname0=File.join( to_attach, 'fubar.txt' ), content0 )
         new_file( attachment_fname1=File.join( to_attach, 'fubar.jpg' ), content1 )
         #attach the file
-        tic= @ticgitng.ticket_attach( attachment_fname0, tic.ticket_id ) 
-        tic= @ticgitng.ticket_attach( attachment_fname1, tic.ticket_id )
+        tic= @ticgitng.ticket_attach( attachment_fname0, tic.ticket_id, Time.now.to_i) 
+        tic= @ticgitng.ticket_attach( attachment_fname1, tic.ticket_id, Time.now.to_i + 60)
         tic.attachments.each {|a| a.filename[/^ATTACHMENTS\//].nil?.should == false }
     end
   end
-  it "should be able to list the attachments on the current ticket"  #`ti attach list`
-  it "should not change the attachment that has been attached if the local file changes"
+  it "should be able to list the attachments on the current ticket" do  #`ti attach list`
+    Dir.chdir(File.expand_path( tmp_dir=Dir.mktmpdir('ticgit-ng-gitdir1-') )) do
+        tic= @ticgitng.ticket_new('my_delicious_ticket')
+        # a file to attach
+        to_attach= Dir.mktmpdir('to_attach')
+        content0="I am the contents of the attachment"
+        content1="More contents!"
+        new_file( attachment_fname0=File.join( to_attach, 'fubar.txt' ), content0 )
+        new_file( attachment_fname1=File.join( to_attach, 'fubar.jpg' ), content1 )
+        #attach the file
+        tic= @ticgitng.ticket_attach( attachment_fname0, tic.ticket_id, Time.now.to_i ) 
+        tic= @ticgitng.ticket_attach( attachment_fname1, tic.ticket_id, Time.now.to_i+60 )
+        tic.attachments.size.should == 2
+        tic.attachments[0].attachment_name.should == 'fubar.txt'
+        tic.attachments[1].attachment_name.should == 'fubar.jpg'
+        tic.attachments[0].user.should_not == nil
+        tic.attachments[1].user.should_not == nil
+    end
+  end
+  it "should not change the attachment that has been attached if the local file changes" do
+    Dir.chdir(File.expand_path( tmp_dir=Dir.mktmpdir('ticgit-ng-gitdir1-') )) do
+        tic= @ticgitng.ticket_new('my_delicious_ticket')
+        # a file to attach
+        to_attach= Dir.mktmpdir('to_attach')
+        content0="I am the contents of the attachment"
+        content1="More contents!"
+        new_file( attachment_fname0=File.join( to_attach, 'fubar.txt' ), content0 )
+        new_file( attachment_fname1=File.join( to_attach, 'fubar.jpg' ), content1 )
+        #attach the file
+        tic= @ticgitng.ticket_attach( attachment_fname0, tic.ticket_id, Time.now.to_i ) 
+        tic= @ticgitng.ticket_attach( attachment_fname1, tic.ticket_id, Time.now.to_i+60 )
+        File.open( attachment_fname0, 'a' ) {|f|
+            f.puts "I am a second line in the first attachment!"
+        }
+        File.open( attachment_fname1, 'a' ) {|f|
+            f.puts "I am a second line in the second attachment!"
+        }
+        tic.base.in_branch {|wd|
+            File.read( File.join( 
+                                 tic.ticket_name,
+                                 tic.attachments[0].filename 
+                                )
+                     ).strip.split("\n").size.should==1
+            File.read( File.join(
+                                 tic.ticket_name,
+                                 tic.attachments[1].filename 
+                                )
+                     ).strip.split("\n").size.should==1
+        }
+        File.read( attachment_fname0 ).strip.split("\n").size.should==2
+        File.read( attachment_fname1 ).strip.split("\n").size.should==2
+    end
+  end
   it "should not explode violently when retrieving an attachment from no attachments"
   it "should be able to handle filenames with '_' in them -- '_' is a special char"
+  it "should allow the attaching of multiple filenames with the same name"
 end
