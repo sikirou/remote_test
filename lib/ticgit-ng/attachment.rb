@@ -41,8 +41,10 @@ module TicGitNG
             #FIXME expect fname to be a raw filename that needs to be converted
             #      into a properly formatted ticket name
             @filename=fname
-            @added, @user, @attachment_name = File.basename(fname).split('_')
-            @added= Time.at(@added.to_i)
+            temp=File.basename(fname).split('_').reverse
+            @added=Time.at(temp.pop.to_i)
+            @user= temp.pop
+            @attachment_name= temp.reverse.join('_')
         end
     end
 end

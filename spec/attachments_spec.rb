@@ -259,6 +259,48 @@ describe TicGitNG::Attachment do
         }.should raise_error(SystemExit)
     end
   end
-  it "should be able to handle filenames with '_' in them -- '_' is a special char"
-  it "should allow the attaching of multiple filenames with the same name"
+  it "should be able to handle filenames with '_' in them -- '_' is a special char" do
+    Dir.chdir(File.expand_path( tmp_dir=Dir.mktmpdir('ticgit-ng-gitdir1-') )) do
+        #Split the attachment basename, delete the first two (time,user), remianing is filename
+        tic= @ticgitng.ticket_new('my_delicious_ticket')
+        # a file to attach
+        to_attach= Dir.mktmpdir('to_attach')
+        content0="I am the contents of the attachment"
+        new_file( attachment_fname0=File.join( to_attach, 'fu_bar.txt' ), content0 )
+        #attach the file
+        tic= @ticgitng.ticket_attach( attachment_fname0, tic.ticket_id, Time.now.to_i ) 
+        tic.attachments[0].attachment_name.should == 'fu_bar.txt'
+    end
+  end
+  it "should allow the attaching of multiple filenames with the same name" do
+    Dir.chdir(File.expand_path( tmp_dir=Dir.mktmpdir('ticgit-ng-gitdir1-') )) do
+        tic= @ticgitng.ticket_new('my_delicious_ticket')
+        # a file to attach
+        to_attach= Dir.mktmpdir('to_attach')
+        content0="I am the contents of the attachment"
+        content1="More contents!"
+        new_file( attachment_fname0=File.join( to_attach, 'fubar.jpg' ), content0 )
+        new_file( attachment_fname1=File.join( to_attach, 'fubar.jpg' ), content1 )
+        #attach the file
+        tic= @ticgitng.ticket_attach( attachment_fname0, tic.ticket_id, Time.now.to_i ) 
+        tic= @ticgitng.ticket_attach( attachment_fname1, tic.ticket_id, Time.now.to_i+60 )
+        tic.attachments[0].attachment_name.should == 'fubar.jpg'
+        tic.attachments[1].attachment_name.should == 'fubar.jpg'
+    end
+  end
+  it "should not explode violently when a duplicate file is attached" do
+    Dir.chdir(File.expand_path( tmp_dir=Dir.mktmpdir('ticgit-ng-gitdir1-') )) do
+        tic= @ticgitng.ticket_new('my_delicious_ticket')
+        # a file to attach
+        to_attach= Dir.mktmpdir('to_attach')
+        content0="I am the contents of the attachment"
+        new_file( attachment_fname0=File.join( to_attach, 'fubar.jpg' ), content0 )
+        new_file( attachment_fname1=File.join( to_attach, 'fubar.jpg' ), content0 )
+        #attach the file
+        tic= @ticgitng.ticket_attach( attachment_fname0, tic.ticket_id, Time.now.to_i ) 
+        tic= @ticgitng.ticket_attach( attachment_fname1, tic.ticket_id, Time.now.to_i+60 )
+        tic.attachments[0].attachment_name.should == 'fubar.jpg'
+        tic.attachments[1].attachment_name.should == 'fubar.jpg'
+    end
+  end
 end
