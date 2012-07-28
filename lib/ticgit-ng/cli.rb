@@ -161,7 +161,7 @@ module TicGitNG
                     #print attachment
                     puts "  * Added #{item[1].added.strftime('%m/%d %H:%M')} by #{item[1].user}"
                     puts "    Attachment: #{t.attachments.index(item[1]) }"
-                    puts "    Filename:   #{File.basename(item[1].attachment_name).split('_').pop}"
+                    puts "    Filename:   #{item[1].attachment_name}"
                     puts
                 end
             }

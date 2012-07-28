@@ -246,6 +246,7 @@ describe TicGitNG::Attachment do
         }
         File.read( attachment_fname0 ).strip.split("\n").size.should==2
         File.read( attachment_fname1 ).strip.split("\n").size.should==2
+        #FIXME checkout the attachments to see if they have changed
     end
   end
   it "should not explode violently when retrieving an attachment from no attachments" do
@@ -301,6 +302,36 @@ describe TicGitNG::Attachment do
         tic= @ticgitng.ticket_attach( attachment_fname1, tic.ticket_id, Time.now.to_i+60 )
         tic.attachments[0].attachment_name.should == 'fubar.jpg'
         tic.attachments[1].attachment_name.should == 'fubar.jpg'
+    end
+  end
+  it "should be able to properly get attachments with '_' in the filename" do
+    Dir.chdir(File.expand_path( tmp_dir=Dir.mktmpdir('ticgit-ng-gitdir1-') )) do
+        tic= @ticgitng.ticket_new('my_delicious_ticket')
+        # a file to attach
+        to_attach= Dir.mktmpdir('to_attach')
+        content0="I am the contents of the attachment"
+        content1="More contents!"
+        new_file( attachment_fname0=File.join( to_attach, 'fu_bar_baz_ted_zim.txt' ), content0 )
+        new_file( attachment_fname1=File.join( to_attach, 'fu_bar_baz_ted_zim*$@#.jpg' ), content1 )
+        #attach the file
+        tic= @ticgitng.ticket_attach( attachment_fname0, tic.ticket_id ) 
+        tic= @ticgitng.ticket_attach( attachment_fname1, tic.ticket_id )
+        #get attachment
+        new_filename0= File.join( 
+            File.expand_path(Dir.mktmpdir('ticgit-ng-get_attachment-test')),
+            'new_filename.txt' )
+        new_filename1= File.join(
+            File.expand_path(Dir.mktmpdir('ticgit-ng-get_attachment-test')),
+            'new_filename.jpg' )
+        #check contents
+        @ticgitng.ticket_get_attachment( 'fu_bar_baz_ted_zim.txt', new_filename0, tic.ticket_id )
+        @ticgitng.ticket_get_attachment( 'fu_bar_baz_ted_zim.txt', File.dirname(new_filename0), tic.ticket_id )
+        File.exist?( new_filename0 ).should == true
+        File.exist?( File.join(File.dirname(new_filename0), 'fu_bar_baz_ted_zim.txt') ).should==true
+        @ticgitng.ticket_get_attachment( 'fu_bar_baz_ted_zim*$@#.jpg', new_filename1, tic.ticket_id )
+        @ticgitng.ticket_get_attachment( 'fu_bar_baz_ted_zim*$@#.jpg', File.dirname(new_filename1), tic.ticket_id )
+        File.exist?( new_filename1 ).should == true
+        File.exist?( File.join(File.dirname(new_filename1), 'fu_bar_baz_ted_zim*$@#.jpg' ) ).should==true
     end
   end
 end

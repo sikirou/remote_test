@@ -176,6 +176,7 @@ module TicGitNG
     #if new_filename is nil, use existing filename
     def get_attach file_id=nil, new_filename=nil
         attachment=nil
+        pwd=Dir.pwd
         base.in_branch do |wd|
             if file_id.to_i==0 and (file_id=="0" or file_id.class==Fixnum)
                 if !attachments[file_id.to_i].nil?
@@ -194,20 +195,20 @@ module TicGitNG
             else
                 #find attachment by filename
                 attachments.each {|a|
-                    attachment=a if a.filename.split('_').pop==file_id
+                    attachment=a if a.attachment_name==file_id
                 }
             end
 
             if !new_filename
                 #if no filename is specified...
-                filename= File.basename(attachment.filename).split('_').pop
+                filename= attachment.attachment_name
             else
                 #if there is a new_filename given
                 if File.exist?( new_filename ) and File.directory?( new_filename )
                     #if it is a directory, not a filename
                     filename= File.join(
                         new_filename,
-                        File.basename(attachment.filename.split('_').pop)
+                        File.basename(attachment.attachment_name)
                     )
                 else
                     #if it is a filename, not a dir
@@ -220,6 +221,9 @@ module TicGitNG
             end
             #save attachment [as new_filename]
             t=File.join( ticket_name, attachment.filename )
+            unless filename[/^\//]
+                filename=File.join( pwd, filename )
+            end
             FileUtils.cp( t, filename )
         end
     end
