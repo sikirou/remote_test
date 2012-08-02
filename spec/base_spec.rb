@@ -189,5 +189,18 @@ describe TicGitNG::Base do
     tic = @ticgitng.ticket_show(tic.ticket_id)
     tic.points.should == 3
   end
-
+  it "should detect the ticgit branch when the repository is moved" do
+    #create git dir
+      #done in before(:all) block
+    #create some tickets
+    tic=@ticgitng.ticket_new('my new ticket')
+    #move the git dir
+    FileUtils.mv( @path, @path+'1' )
+    #test that the program does not raise SystemExit
+    opts=test_opts
+    opts=opts[:init]=false
+    lambda {
+        @ticgitng= TicGitNG.open( @path+'1', opts )
+    }.should_not raise SystemExit
+  end
 end
