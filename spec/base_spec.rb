@@ -46,14 +46,6 @@ describe TicGitNG::Base do
     tic.state.should_not eql('resolve')
   end
 
-  describe "Testing a ticket" do
-    let(:tic) {  @ticgitng.ticket_list.first }
-
-    it "should get username from git" do
-      tic.opts.should be_a Hash
-    end
-  end
-
   it "should be able to change to whom the ticket is assigned" do
     tic = @ticgitng.ticket_list.first
     @ticgitng.ticket_assign('pope', tic.ticket_id)
@@ -198,7 +190,7 @@ describe TicGitNG::Base do
     FileUtils.mv( @path, @path+'1' )
     #test that the program does not raise SystemExit
     opts=test_opts
-    opts=opts[:init]=false
+    opts[:init]=false
     lambda {
         @ticgitng= TicGitNG.open( @path+'1', opts )
     }.should_not raise SystemExit
