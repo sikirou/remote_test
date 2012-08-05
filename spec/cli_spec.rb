@@ -30,6 +30,8 @@ The available ticgit commands are:
     attach                           Attach file to ticket
     checkout                         Checkout a ticket
     comment                          Comment on a ticket
+    help                             Show help for a ticgit command
+    init                             Initialize Ticgit-ng
     list                             List tickets
     milestone                        List and modify milestones
     new                              Create a new ticket
@@ -59,7 +61,7 @@ Common options:
     cli('init','list') do |line|
       output << line
     end
-    output.shift.should match "creating ticgit-ng repo branch"
+    output.shift.should match ""
     output.shift.should match /#{fields.join '\s+'}/
     output.shift.should match /^-+$/
   end

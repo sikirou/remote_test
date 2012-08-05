@@ -65,6 +65,22 @@ module TicGitNG
 
       @state = File.expand_path(File.join(@tic_dir, proj, 'state'))
 
+      branches=git.lib.branches_all.map{|b|b.first}
+      unless branches.include?(which_branch?) && File.directory?(@tic_working)
+        if branches.include?(which_branch?) and !File.exist?(@tic_working)
+          #branch exists but tic_working doesn't
+          #this could be because the dir was deleted or the repo itself
+          #was moved, so recreate the dir.
+          reset_ticgitng
+        elsif @init
+          puts "Initializing TicGit-ng"
+          init_ticgitng_branch( branches.include?(which_branch?) )
+        else
+          puts "Please run `ti init` to initialize TicGit-ng for this repository before running other ti commands."
+          exit
+        end
+      end
+
       if File.file?(@state)
         load_state
       else
@@ -84,6 +100,9 @@ module TicGitNG
     # save config file
     def save_state
       state_list = [@last_tickets, @current_ticket]
+      unless File.exist? @state
+        FileUtils.mkdir_p( File.dirname(@state) )
+      end
       File.open(@state, 'w+'){|io| Marshal.dump(state_list, io) }
       File.open(@config_file, 'w+'){|io| io.write(config.to_yaml) }
     end
@@ -333,21 +352,6 @@ module TicGitNG
 
     def read_tickets
       tickets = {}
-
-      bs = git.lib.branches_all.map{|b| b.first }
-
-      unless (bs.include?(which_branch?) || bs.include?(which_branch?))  &&
-              File.directory?(@tic_working)
-        unless @init
-          puts "Please run `ti init` to initialize TicGit-ng for this repository before running other ti commands."
-          exit
-        else
-          puts "Initializing TicGit-ng"
-          init_ticgitng_branch(
-            git.lib.branches_all.map{|b| b.first }.include?(which_branch?)
-          )
-        end
-      end
 
       tree = git.lib.full_tree(which_branch?)
       tree.each do |t|
