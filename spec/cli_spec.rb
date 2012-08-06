@@ -15,7 +15,25 @@ describe TicGitNG::CLI do
     Dir.glob(File.expand_path("/tmp/ticgit-ng-*")).each {|file_name| FileUtils.rm_r(file_name, {:force=>true,:secure=>true}) }
   end
 
-  it "should list the tickets"
+  it "should list the tickets" do
+    @ticgitng.tickets.size.should eql(0)
+    @ticgitng.ticket_new('my new ticket').should be_an_instance_of(TicGitNG::Ticket)
+    @ticgitng.tickets.size.should eql(1)
+    fields = %w[TicId Title State Date Assgn Tags]
+    output = []
+    # It's unclear why it's necessary to append each line like this, but
+    # cli('list') would otherwise return nil. The spec helper probably
+    # needs some refactoring.
+    cli('init','list') do |line|
+      output << line
+    end
+    output.shift.should match ""
+    output.shift.should match /#{fields.join( '\s+' )}/
+    output.shift.should match /^-+$/
+    #check that at least a SHA1 prefix exists
+    output.shift[/^[a-z0-9]{6}\s/].should_not == nil
+    output.shift.should match ""
+  end
 
   it "should show a ticket"
 

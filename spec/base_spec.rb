@@ -191,7 +191,8 @@ describe TicGitNG::Base do
     #test that the program does not raise SystemExit
     opts=test_opts
     opts[:init]=false
-    @ticgitng= TicGitNG.open( @path+'1', opts )
-    @ticgitng.class.should == TicGitNG::Base
+    lambda {
+        @ticgitng=TicGitNG.open( @path+'1', opts )
+    }.should_not raise_error SystemExit
   end
 end
