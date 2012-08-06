@@ -122,8 +122,8 @@ module TicGitNG
     end
 
     # returns new Ticket
-    def ticket_new(title, options = {})
-      t = TicGitNG::Ticket.create(self, title, options)
+    def ticket_new(title, options = {}, time=nil)
+      t = TicGitNG::Ticket.create(self, title, options, time)
       reset_ticgitng
       TicGitNG::Ticket.open(self, t.ticket_name, tickets[t.ticket_name])
     end

@@ -43,11 +43,11 @@ tempdir -
     string.enum_for(:each_line).map{|line| line.strip }
   end
 
-  def cli(*args, &block)
+  def cli(path, *args, &block)
     TICGITNG_HISTORY.truncate 0
     TICGITNG_HISTORY.rewind
 
-    ticgitng = TicGitNG::CLI.new(args.flatten, @path, TICGITNG_HISTORY)
+    ticgitng = TicGitNG::CLI.new(args.flatten, path, TICGITNG_HISTORY)
     ticgitng.parse_options!
     ticgitng.execute!
 

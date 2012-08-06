@@ -25,10 +25,10 @@ module TicGitNG
       @attachments = []
     end
 
-    def self.create(base, title, options = {})
+    def self.create(base, title, options = {}, time=nil)
       t = Ticket.new(base, options)
       t.title = title
-      t.ticket_name = self.create_ticket_name(title)
+      t.ticket_name = self.create_ticket_name(title, time)
       t.save_new
       t
     end
@@ -332,8 +332,8 @@ module TicGitNG
       assigned.split('@').first rescue ''
     end
 
-    def self.create_ticket_name(title)
-      [Time.now.to_i.to_s, Ticket.clean_string(title), rand(999).to_i.to_s].join('_')
+    def self.create_ticket_name(title, time=nil)
+      [time.nil? ? Time.now.to_i.to_s : time, Ticket.clean_string(title), rand(999).to_i.to_s].join('_')
     end
 
     def create_attachment_name( attachment_name, time=nil )

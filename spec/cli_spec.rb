@@ -24,7 +24,7 @@ describe TicGitNG::CLI do
     # It's unclear why it's necessary to append each line like this, but
     # cli('list') would otherwise return nil. The spec helper probably
     # needs some refactoring.
-    cli('init','list') do |line|
+    cli(@path, 'init','list') do |line|
       output << line
     end
     output.shift.should match ""
@@ -65,7 +65,7 @@ Common options:
     -h, --help                       Display this help
     OUT
 
-    cli do |line|
+    cli(@path) do |line|
       line.should == expected.shift
     end
   end
@@ -76,7 +76,7 @@ Common options:
     # It's unclear why it's necessary to append each line like this, but
     # cli('list') would otherwise return nil. The spec helper probably
     # needs some refactoring.
-    cli('init','list') do |line|
+    cli(@path, 'init','list') do |line|
       output << line
     end
     output.shift.should match ""
