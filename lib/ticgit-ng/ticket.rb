@@ -348,5 +348,13 @@ module TicGitNG
         time or time=Time.now.to_i
         time.to_s+'_'+email+'_'+File.basename( attachment_name )
     end
+    def ==(ticket2)
+        self.instance_variables.each {|instance_var|
+            unless send( instance_var.gsub('@','').to_sym ) == ticket2.instance_eval {send(instance_var.gsub('@','').to_sym)}
+                return false
+            end
+        }
+        return true
+    end
   end
 end
