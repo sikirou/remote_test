@@ -15,6 +15,17 @@ describe TicGitNG::Base do
     Dir.glob(File.expand_path("/tmp/ticgit-ng-*")).each {|file_name| FileUtils.rm_r(file_name, {:force=>true,:secure=>true}) }
   end
 
+  it "should fail gracefully when init-ing if git has no commits" do
+    tempdir = Dir.mktmpdir
+    Dir.chdir(tempdir) do
+      git = Git.init
+    end
+    opts=test_opts
+    lambda {
+      TicGitNG.open( tempdir, opts )
+    }.should raise_error SystemExit
+  end
+
   it "should have 4 ticket states" do
     @ticgitng.tic_states.size.should eql(4)
   end
