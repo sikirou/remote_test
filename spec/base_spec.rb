@@ -208,4 +208,17 @@ describe TicGitNG::Base do
         @ticgitng=TicGitNG.open( @path+'1', opts )
     }.should_not raise_error SystemExit
   end
+
+  it "should use the same email that git provides" do
+    #This is necessary because the other specs depend
+    #on the side effects of one another, but those 
+    #side effects are detrimental to this spec so
+    #we initialize things again for a clean slate.
+    @path = setup_new_git_repo
+    @orig_test_opts = test_opts
+    @ticgitng = TicGitNG.open(@path, @orig_test_opts)
+    tic=@ticgitng.ticket_new('my new ticket')
+    tic.email.should == @ticgitng.git.lib.config_get('user.email')
+  end
+
 end
