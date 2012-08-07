@@ -21,7 +21,7 @@ unless (defined?(RbConfig) ? RbConfig : Config)::CONFIG["ruby_version"][/^\d\.9/
   module Git
     class Lib
       def config_get(name)
-        do_get = lambda do |name|
+        do_get = lambda do |x|
           command('config', ['--get', name])
         end
         if @git_dir

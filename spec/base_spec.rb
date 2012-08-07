@@ -184,6 +184,7 @@ describe TicGitNG::Base do
     t = @ticgitng.ticket_new('my next ticket', :tags => ['scotty', 'chacony'])
     File.lstat(@ticgitng.state).mtime.to_i.should_not eql(time)
   end
+
   it "should be able to change the points of a ticket" do
     @ticgitng.ticket_new('my new ticket')
     tic = @ticgitng.ticket_list.first
@@ -192,6 +193,7 @@ describe TicGitNG::Base do
     tic = @ticgitng.ticket_show(tic.ticket_id)
     tic.points.should == 3
   end
+
   it "should detect the ticgit branch when the repository is moved" do
     #create git dir
       #done in before(:all) block
