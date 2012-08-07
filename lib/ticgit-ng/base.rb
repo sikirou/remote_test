@@ -10,6 +10,14 @@ module TicGitNG
 
     def initialize(git_dir, opts = {})
       @git = Git.open(find_repo(git_dir))
+
+      begin
+        git.lib.full_log_commits
+      rescue
+        puts "Git error: please check your git repository, you must have at least one commit in git"
+        exit 1
+      end
+
       @logger = opts[:logger] || Logger.new(STDOUT)
 
       #This is to accomodate for edge-cases where @logger.puts
