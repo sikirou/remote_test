@@ -20,7 +20,7 @@ module TicGitNG
         else
           puts 'You need to at least specify one tag to add'
           puts
-          puts parser
+          puts usage
         end
       end
     end
