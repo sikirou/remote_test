@@ -309,6 +309,7 @@ module TicGitNG
         ticket = TicGitNG::Ticket.open(self, t, tickets[t])
         ticket.change_assigned(new_assigned)
         reset_ticgitng
+        ticket
       end
     end
 
@@ -429,7 +430,9 @@ module TicGitNG
     def new_file(name, contents)
       File.open(name, 'w+'){|f| f.puts(contents) }
     end
+
     def which_branch?
+      #At present use the 'ticgit' branch for backwards compatibility
       branches=@git.branches.local.map {|b| b.name}
       if branches.include? 'ticgit-ng'
         return 'ticgit-ng'
