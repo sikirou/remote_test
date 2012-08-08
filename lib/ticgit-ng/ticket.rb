@@ -53,7 +53,7 @@ module TicGitNG
 
           case data[0]
           when 'ASSIGNED'
-            t.assigned = data[1]
+            t.assigned = data[1..-1].join('_')
           when 'ATTACHMENTS'
               #Attachments dir naming format:
               #ticket_name/ATTACHMENTS/123456_jeff.welling@gmail.com_fubar.jpg
