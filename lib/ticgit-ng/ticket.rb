@@ -62,7 +62,7 @@ module TicGitNG
             filename=File.join( 'ATTACHMENTS', fname.gsub(/^ATTACHMENTS_/,'') )
             t.attachments << TicGitNG::Attachment.new( filename )
           when 'COMMENT'
-            t.comments << TicGitNG::Comment.new(base, fname, sha)
+            t.comments << TicGitNG::Comment.read(base, fname, sha)
           when 'POINTS'
             t.points = base.git.gblob(sha).contents.to_i
           when 'STATE'
