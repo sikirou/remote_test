@@ -149,6 +149,7 @@ module TicGitNG
         ticket = TicGitNG::Ticket.open(self, t, tickets[t])
         ticket.add_comment(comment)
         reset_ticgitng
+        ticket
       end
     end
 
@@ -291,6 +292,7 @@ module TicGitNG
           ticket.add_tag(tag)
         end
         reset_ticgitng
+        ticket
       end
     end
 
@@ -300,6 +302,7 @@ module TicGitNG
           ticket = TicGitNG::Ticket.open(self, t, tickets[t])
           ticket.change_state(new_state)
           reset_ticgitng
+          ticket
         end
       end
     end
@@ -318,6 +321,7 @@ module TicGitNG
         ticket = TicGitNG::Ticket.open(self, t, tickets[t])
         ticket.change_points(new_points)
         reset_ticgitng
+        ticket
       end
     end
 
@@ -326,6 +330,7 @@ module TicGitNG
         ticket = TicGitNG::Ticket.open(self, t, tickets[t])
         @current_ticket = ticket.ticket_name
         save_state
+        ticket
       end
     end
 

@@ -151,6 +151,8 @@ module TicGitNG
         base.git.add File.join(ticket_name, t)
         base.git.commit("added comment to ticket #{ticket_name}")
       end
+      @comments << TicGitNG::Comment.new( comment, email )
+      self
     end
 
     def add_attach( base, filename, time=nil )
@@ -166,6 +168,7 @@ module TicGitNG
         if attachments.class!=NilClass and attachments.size > 1
             @attachments=attachments.sort {|a1,a2| a1.added <=> a2.added }
         end
+        self
     end
 
     #file_id can be one of:
@@ -226,6 +229,7 @@ module TicGitNG
             end
             FileUtils.cp( t, filename )
         end
+        self
     end
 
     def change_state(new_state)
@@ -241,6 +245,8 @@ module TicGitNG
         base.git.add File.join(ticket_name, t)
         base.git.commit("added state (#{new_state}) to ticket #{ticket_name}")
       end
+      @state=new_state
+      self
     end
 
     def change_assigned(new_assigned)
@@ -257,6 +263,8 @@ module TicGitNG
         base.git.add File.join(ticket_name,t)
         base.git.commit("assigned #{new_assigned} to ticket #{ticket_name}")
       end
+      @assigned=new_assigned
+      self
     end
 
     def change_points(new_points)
@@ -269,6 +277,8 @@ module TicGitNG
         base.git.add File.join(ticket_name, 'POINTS')
         base.git.commit("set points to #{new_points} for ticket #{ticket_name}")
       end
+      @points=new_points
+      self
     end
 
     def add_tag(tag)
@@ -296,6 +306,10 @@ module TicGitNG
           base.git.commit("added tags (#{tag}) to ticket #{ticket_name}")
         end
       end
+      tags.each {|tag|
+        @tags << tag
+      }
+      self
     end
 
     def remove_tag(tag)
@@ -314,6 +328,8 @@ module TicGitNG
           base.git.commit("removed tags (#{tag}) from ticket #{ticket_name}")
         end
       end
+      @tags.delete_if {|t| t==tag }
+      self
     end
 
     def path
