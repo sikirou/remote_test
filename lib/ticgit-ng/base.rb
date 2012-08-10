@@ -334,12 +334,6 @@ module TicGitNG
       end
     end
 
-    def comment_add(ticket_id, comment, options = {})
-    end
-
-    def comment_list(ticket_id)
-    end
-
     def tic_states
       ['open', 'resolved', 'invalid', 'hold']
     end
@@ -479,7 +473,6 @@ module TicGitNG
     def ticket_get_attachment file_id=nil, new_filename=nil, ticket_id=nil 
         if t = ticket_revparse(ticket_id)
             ticket = Ticket.open( self, t, tickets[t] )
-            #deal with new_filename being a dir as well as new_filename being a filename
             ticket.get_attach( file_id, new_filename )
         end
     end

@@ -73,6 +73,7 @@ describe TicGitNG::Attachment do
         }.index( true ).should_not == nil
     end
   end
+
   it "should support multiple attachments per ticket" do
     Dir.chdir(File.expand_path( tmp_dir=Dir.mktmpdir('ticgit-ng-gitdir1-') )) do
         tic= @ticgitng.ticket_new('my_delicious_ticket')
