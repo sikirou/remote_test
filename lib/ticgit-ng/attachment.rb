@@ -3,6 +3,17 @@ module TicGitNG
         attr_reader :user, :added, :filename, :sha, :attachment_name
         attr_reader :original_filename
         alias :read :initialize
+
+        def initialize( fname )
+            #FIXME expect fname to be a raw filename that needs to be converted
+            #      into a properly formatted ticket name
+            @filename=fname
+            temp=File.basename(fname).split('_').reverse
+            @added=Time.at(temp.pop.to_i)
+            @user= temp.pop
+            @attachment_name= temp.reverse.join('_')
+        end
+
         #Called when attaching a new attachment and when reading/opening attachments
         #FIXME Make a 'read' and 'create' function to differentiate between
         #      between creation of a ticket and reading an existing ticket.
@@ -35,16 +46,6 @@ module TicGitNG
                               File.basename( a_name )
                              )
             return Attachment.new( a_name )
-        end
-        def initialize( fname )
-
-            #FIXME expect fname to be a raw filename that needs to be converted
-            #      into a properly formatted ticket name
-            @filename=fname
-            temp=File.basename(fname).split('_').reverse
-            @added=Time.at(temp.pop.to_i)
-            @user= temp.pop
-            @attachment_name= temp.reverse.join('_')
         end
     end
 end
