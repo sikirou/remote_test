@@ -235,4 +235,67 @@ describe TicGitNG::Base do
     tic.assigned.should == 'some_random_user'
   end
 
+  it "should return an updated ticket for each of the ticket_* methods" do
+    #This is necessary because the other specs depend
+    #on the side effects of one another, but those
+    #side effects are detrimental to this spec so
+    #we initialize things again for a clean slate.
+    @path = setup_new_git_repo
+    @orig_test_opts = test_opts
+    @ticgitng = TicGitNG.open(@path, @orig_test_opts)
+    num_of_methods= @ticgitng.methods.collect {|m|
+      m if m[/^ticket_/]
+    }.compact.size.-(1).should == 12
+    #ticket_new, ticket_points, ticket_tag
+    ticket=@ticgitng.ticket_new('my new ticket')
+    ticket.class.should == TicGitNG::Ticket
+    ticket.title.should == 'my new ticket'
+    ticket=@ticgitng.ticket_points( 1337, ticket.ticket_id )
+    ticket.class.should == TicGitNG::Ticket
+    ticket.points.should == 1337
+    ticket=@ticgitng.ticket_tag( 'fubar', ticket.ticket_id )
+    ticket.class.should == TicGitNG::Ticket
+    ticket.tags.size.should == 1
+    ticket.tags[0].should == 'fubar'
+    #ticket_attach, ticket_get_attachment,
+    Dir.chdir(File.expand_path( tmp_dir=Dir.mktmpdir('ticgit-ng-gitdir1-') )) do
+        #create a file to attach
+        to_attach= Dir.mktmpdir('to_attach')
+        new_file( attachment_fname=File.join( to_attach, 'fubar.txt' ), "I am the contents of the attachment" )
+        #attach the file
+        ticket= @ticgitng.ticket_attach( attachment_fname, ticket.ticket_id )
+        ticket.class.should == TicGitNG::Ticket
+        ticket.attachments.size.should == 1
+        ticket.attachments[0].attachment_name.should == 'fubar.txt'
+        ticket= @ticgitng.ticket_get_attachment( 'fubar.txt', nil, ticket.ticket_id )
+        ticket.class.should == TicGitNG::Ticket
+        ticket.attachments.size.should == 1
+        ticket.attachments[0].attachment_name.should == 'fubar.txt'
+    end
+    #ticket_assign, ticket_revparse,
+    ticket=@ticgitng.ticket_assign( 'some_random_guy', ticket.ticket_id )
+    ticket.class.should == TicGitNG::Ticket
+    ticket.assigned.should == 'some_random_guy'
+    ticket1=@ticgitng.ticket_revparse( ticket.ticket_id[/[0-9a-z]{5}/] )
+    ticket1.should == ticket.ticket_name
+    #ticket_change, ticket_show,
+    ticket=@ticgitng.ticket_change( 'resolved', ticket.ticket_id )
+    ticket.class.should == TicGitNG::Ticket
+    ticket.state.should == 'resolved'
+    @ticgitng.ticket_change( 'open', ticket.ticket_id )
+    ticket=@ticgitng.ticket_show( ticket.ticket_id )
+    ticket.class.should == TicGitNG::Ticket
+    #ticket_checkout, ticket_list,
+    ticket=@ticgitng.ticket_checkout( ticket.ticket_id )
+    ticket.class.should == TicGitNG::Ticket
+    @ticgitng.current_ticket.should == ticket.ticket_name
+    tickets=@ticgitng.ticket_list
+    tickets.size.should == 1
+    tickets[0].class.should == TicGitNG::Ticket
+    tickets[0].ticket_id.should == ticket.ticket_id
+    #ticket_comment
+    ticket=@ticgitng.ticket_comment( 'fubar fubar fubar', ticket.ticket_id )
+    ticket.comments[0].comment.should == 'fubar fubar fubar'
+  end
+
 end
