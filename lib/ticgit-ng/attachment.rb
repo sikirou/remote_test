@@ -8,10 +8,15 @@ module TicGitNG
             #FIXME expect fname to be a raw filename that needs to be converted
             #      into a properly formatted ticket name
             @filename=fname
+            trailing_underscore= File.basename(fname)[/_$/] ? true : false
+            trailing_underscore=false
             temp=File.basename(fname).split('_').reverse
             @added=Time.at(temp.pop.to_i)
             @user= temp.pop
             @attachment_name= temp.reverse.join('_')
+            if trailing_underscore
+              @attachment_name << '_'
+            end
         end
 
         #Called when attaching a new attachment and when reading/opening attachments
