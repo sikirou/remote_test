@@ -186,20 +186,24 @@ module TicGitNG
                     attachment= attachments[0]
                 else
                     puts "No attachments match file id #{file_id}"
-                    exit
+                    exit 1
                 end
             elsif file_id.to_i  > 0
                 if !attachments[file_id.to_i].nil?
                     attachment= attachments[file_id.to_i]
                 else
                     puts "No attachments match file id #{file_id}"
-                    exit
+                    exit 1
                 end
             else
                 #find attachment by filename
                 attachments.each {|a|
                     attachment=a if a.attachment_name==file_id
                 }
+                if attachment.nil?
+                  puts "No attachments match filename #{file_id}"
+                  exit 1
+                end
             end
 
             if !new_filename
