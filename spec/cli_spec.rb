@@ -186,7 +186,6 @@ The available ticgit commands are:
     help                             Show help for a ticgit command
     init                             Initialize Ticgit-ng
     list                             List tickets
-    milestone                        List and modify milestones
     new                              Create a new ticket
     points                           Assign points to a ticket
     recent                           List recent activities
