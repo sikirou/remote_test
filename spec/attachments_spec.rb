@@ -168,12 +168,14 @@ describe TicGitNG::Attachment do
             'new_filename.jpg' )
         #check contents
         @ticgitng.ticket_get_attachment( 'fubar.txt', new_filename0, tic.ticket_id )
+        #test getting a file to a directory by specifying new-filename as a directory
         @ticgitng.ticket_get_attachment( 'fubar.txt', File.dirname(new_filename0), tic.ticket_id )
         File.exist?( new_filename0 ).should == true
         File.exist?( File.join(File.dirname(new_filename0), 'fubar.txt') ).should==true
         read_line_of( new_filename0 ).strip.should == content0
         read_line_of( File.join(File.dirname(new_filename0), 'fubar.txt') ).strip.should == content0
         @ticgitng.ticket_get_attachment( 'fubar.jpg', new_filename1, tic.ticket_id )
+        #test getting a file to a directory by specifying new-filename as a directory
         @ticgitng.ticket_get_attachment( 'fubar.jpg', File.dirname(new_filename1), tic.ticket_id )
         File.exist?( new_filename1 ).should == true
         File.exist?( File.join(File.dirname(new_filename1), 'fubar.jpg' ) ).should==true
