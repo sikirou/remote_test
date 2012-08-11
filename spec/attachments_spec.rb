@@ -337,4 +337,29 @@ describe TicGitNG::Attachment do
         File.exist?( File.join(File.dirname(new_filename1), 'fu_bar_baz_ted_zim*$@#.jpg' ) ).should==true
     end
   end
+  it "should fail gracefully when trying to get a filename that does not exist" do
+    Dir.chdir(File.expand_path( tmp_dir=Dir.mktmpdir('ticgit-ng-gitdir1-') )) do
+      lambda {
+          tic= @ticgitng.ticket_new('my_delicious_ticket')
+          # a file to attach
+          to_attach= Dir.mktmpdir('to_attach')
+          content0="I am the contents of the attachment"
+          content1="More contents!"
+          new_file( attachment_fname0=File.join( to_attach, 'fubar.txt' ), content0 )
+          new_file( attachment_fname1=File.join( to_attach, 'fubar.jpg' ), content1 )
+          #attach the file
+          tic= @ticgitng.ticket_attach( attachment_fname0, tic.ticket_id )
+          tic= @ticgitng.ticket_attach( attachment_fname1, tic.ticket_id )
+          #get attachment
+          new_filename0= File.join(
+              File.expand_path(Dir.mktmpdir('ticgit-ng-get_attachment-test')),
+              'new_filename.txt' )
+          new_filename1= File.join(
+              File.expand_path(Dir.mktmpdir('ticgit-ng-get_attachment-test')),
+              'new_filename.jpg' )
+          #check contents
+          @ticgitng.ticket_get_attachment( 'fake_file.txt', new_filename0, tic.ticket_id )
+        }.should raise_error SystemExit
+    end
+  end
 end
