@@ -58,15 +58,7 @@ module TicGitNG
       if File.exist?(@tic_working)
         cache_mtime=File.mtime(@tic_working)
         begin
-
-=begin
-            gitlog_mtime= git.gblob(which_branch?).log(1).map {|l| 
-              l.committer.date 
-            }[0]
-=end
-
-            gitlog_mtime= File.mtime(File.join( find_repo('.'), ".git/refs/heads/#{branch}" ))
-
+          gitlog_mtime= File.mtime(File.join( find_repo('.'), ".git/refs/heads/#{branch}" ))
         rescue
           reset_cache
         end
