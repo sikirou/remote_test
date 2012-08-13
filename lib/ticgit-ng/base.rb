@@ -39,7 +39,7 @@ module TicGitNG
 
       #Use this hack instead of git itself because this is ridiculously faster then
       #getting the same information from git
-      branches= Dir.entries( File.join(find_repo('.'),'.git/refs/heads/') ).delete_if {|i|
+      branches= Dir.entries( File.join(find_repo(git_dir),'.git/refs/heads/') ).delete_if {|i|
         i=='.' || i=='..'
       }
       branch= branches.include?('ticgit-ng') ? ('ticgit-ng') : ('ticgit')
