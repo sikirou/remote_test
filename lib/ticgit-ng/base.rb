@@ -37,11 +37,17 @@ module TicGitNG
 
       proj = Ticket.clean_string(@git.dir.path)
 
-      @tic_dir = opts[:tic_dir] || "~/.#{which_branch?}"
+      #Use this hack instead of git itself because this is ridiculously faster then
+      #getting the same information from git
+      branches= Dir.entries( File.join(find_repo(git_dir),'.git/refs/heads/') ).delete_if {|i|
+        i=='.' || i=='..'
+      }
+      branch= branches.include?('ticgit-ng') ? ('ticgit-ng') : ('ticgit')
+
+      @tic_dir = opts[:tic_dir] ||"~/.#{branch}"
       @tic_working = opts[:working_directory] || File.expand_path(File.join(@tic_dir, proj, 'working'))
       @tic_index = opts[:index_file] || File.expand_path(File.join(@tic_dir, proj, 'index'))
 
-      @logger = opts[:logger] || Logger.new(STDOUT)
       @last_tickets = []
 
       #expire @tic_index and @tic_working if it mtime is older than 
@@ -51,7 +57,11 @@ module TicGitNG
       #the previous instance of the temp dir.
       if File.exist?(@tic_working)
         cache_mtime=File.mtime(@tic_working)
-        (gitlog_mtime=git.gblob(which_branch?).log(1).map {|l| l.committer.date }[0]) rescue reset_cache
+        begin
+          gitlog_mtime= File.mtime(File.join( find_repo('.'), ".git/refs/heads/#{branch}" ))
+        rescue
+          reset_cache
+        end
 
         #unless (cache_mtime > gitlog_mtime.-(20) and cache_mtime <= gitlog_mtime) or (cache_mtime > gitlog_mtime.+(30) and cache_mtime >= gitlog_mtime)
         #FIXME break logic out into several lines
@@ -73,16 +83,15 @@ module TicGitNG
 
       @state = File.expand_path(File.join(@tic_dir, proj, 'state'))
 
-      branches=git.lib.branches_all.map{|b|b.first}
-      unless branches.include?(which_branch?) && File.directory?(@tic_working)
-        if branches.include?(which_branch?) and !File.exist?(@tic_working)
+      unless branches.include?(branch) && File.directory?(@tic_working)
+        if branches.include?(branch) and !File.exist?(@tic_working)
           #branch exists but tic_working doesn't
           #this could be because the dir was deleted or the repo itself
           #was moved, so recreate the dir.
           reset_ticgitng
         elsif @init
           puts "Initializing TicGit-ng"
-          init_ticgitng_branch( branches.include?(which_branch?) )
+          init_ticgitng_branch( branches.include?(branch) )
         else
           puts "Please run `ti init` to initialize TicGit-ng for this repository before running other ti commands."
           exit
@@ -438,6 +447,7 @@ module TicGitNG
       else
         return 'ticgit'
       end
+
       #If has ~/.ticgit dir, and 'ticgit' branch
       #If has ~/.ticgit-ng dir, and 'ticgit-ng' branch, and not ~/.ticgit dir and not 'ticgit' branch
     end
