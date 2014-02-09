@@ -1,0 +1,36 @@
+## Development ##
+
+This document describes workflows currently used for various tasks (and other shenanigans if necessary).
+I try to follow [this git flow](http://nvie.com/posts/a-successful-git-branching-model/). 
+
+### Testing ###
+
+To test:
+
+    rspec spec/*_spec.rb
+
+
+### Hotfixes ###
+
+To create a hotfix:
+
+    git checkout master
+    git checkout -b hotfix-VERSION
+    #Edit lib/ticgit-ng/version.rb to bump the version number
+    #Apply your changes
+    git checkout master
+    git merge --no-ff hotfix-VERSION
+    git tag VERSION
+
+### Creating a gem ###
+
+To create a gem:
+
+   gem build ticgit-ng.gemspec
+
+This produces `TicGit-ng-VERSION.gem`.
+To push the gem, you would do `gem push TicGit-ng-VERSION.gem` but this would require an account on Rubygems, and would also require renaming the gem due to namespace conflicts.
+
+### Testing ###
+
+I'm a firm believer in testing.  If you are submitting a patch or pull request, please do your absolute best to include a test. I will write the test myself if I can, but this increases the time it takes to get the patch included and published. In some circumstances it is fine to not include a patch, eg difficult to test problems.

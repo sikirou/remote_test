@@ -386,7 +386,7 @@ I pull rubygems from testing to avoid a problem with gherkin creating a syntacti
 
 To test your version of ticgit-ng, go to your ticgit-ng directory and run
 
-    rake bacon
+    rspec spec/*_spec.rb
 
 ### How to generate a gem from your development copy of ticgit-ng ###
 
